@@ -1,0 +1,9 @@
+.idea
+.settings
+target
+.classpath
+.project
+eweb4j-all.iml
+src/test/resources/mysql.xml
+release.properties
+.DS_Store
