@@ -12,6 +12,12 @@ import java.util.Date;
 public class TimeParser {
     private static final String ERROR_MSG = "NOT POSSIBLE";
 
+    public static void main(String[] args) {
+        TimeParser parser = new TimeParser();
+        String timeStr = parser.getTimeStr(9, 8, 7, 5, 3, 0);
+        System.out.print("earliest date=" + timeStr);
+    }
+
     public String getTimeStr(int a, int b, int c, int d, int e, int f) {
         int[] array = new int[]{a, b, c, d, e, f};
         Arrays.sort(array);
@@ -77,11 +83,5 @@ public class TimeParser {
             return ERROR_MSG;
         }
         return sb.toString();
-    }
-
-    public static void main(String[] args) {
-        TimeParser parser = new TimeParser();
-        String timeStr = parser.getTimeStr(9, 8, 7, 5, 3, 0);
-        System.out.print("earliest date=" + timeStr);
     }
 }
