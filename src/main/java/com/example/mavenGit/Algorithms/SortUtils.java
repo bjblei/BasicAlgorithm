@@ -34,4 +34,15 @@ public class SortUtils {
         }
         System.out.print("]");
     }
+
+    public static void printArray(Object[] result) {
+        System.out.print("[");
+        for (int i = 0; i < result.length; i++) {
+            System.out.print(result[i]);
+            if (i < result.length - 1) {
+                System.out.print(",");
+            }
+        }
+        System.out.print("]");
+    }
 }
