@@ -9,8 +9,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class App {
     private ReentrantLock lock = new ReentrantLock();
     private volatile Integer num = new Integer(0);
-    private Condition odd = lock.newCondition();
-    private Condition even = lock.newCondition();
+    private Condition odd = lock.newCondition();//奇数
+    private Condition even = lock.newCondition();//偶数
 
     public App() {
     }
