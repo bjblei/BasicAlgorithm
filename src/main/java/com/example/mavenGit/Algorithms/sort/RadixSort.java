@@ -13,7 +13,6 @@ public class RadixSort {
      * 代价 n的3次方
      *
      * @param src 长度为n的多位正整数
-     * @param d   给定d位数
      * @return
      */
     public static int[] sort(int[] src) {
