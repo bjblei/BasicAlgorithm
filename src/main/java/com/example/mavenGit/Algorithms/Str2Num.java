@@ -14,7 +14,114 @@ import java.util.List;
  */
 public class Str2Num {
 
+
+    /**
+     * @param str
+     * @return
+     */
+    //todo 尝试用一个指针简化处理
     public static Integer getNumFromChineseStr(String str) {
+        if (null == str || "".equals(str.trim())) {
+
+        }
+        char[] arrays = str.toCharArray();
+        if (null == arrays) {
+            return -1;
+        }
+        int len = arrays.length;
+        if (len == 0) {
+            return -1;
+        }
+
+        //首先排除起始字符非法的情况
+        char ch1 = arrays[0];
+        ChineseNum chinNum = ChineseNum.getByName(ch1);
+        if (null == chinNum || chinNum.getNum() <= 0) { //第一个字符必须是非0数字
+            return -1;
+        }
+        if (len == 1) {
+            return chinNum.getNum();//只有1位
+        }
+        //将原来的字符串解析为NumPoint对象：数量／单位组合
+        List<NumPoint> list = new LinkedList<NumPoint>();
+        for (int i = 0; i < len; i++) {
+            char ch = arrays[i];
+            if (NumPoint.isIllegalChar(ch)) {
+                System.out.print("非法字符：pos=prev,index=" + i + ",char=" + ch);
+                return -1;
+            }
+            //非数字字符：原则上略过
+            if (NumPoint.isChinesePos(ch)) {
+                if (NumPoint.isChineseNormalPos(ch)) {// 三十 类型已经处理过
+                    System.out.print("非法字符：pos=prev,index=" + i + ",char=" + ch);
+                    return -1;
+                }
+                //'万'或者'亿'
+                ChineseNum num = ChineseNum.POS;//数字
+                IntegerNumPos pos = IntegerNumPos.getByName(ch);//单位
+                NumPoint point = new NumPoint(num, pos);
+                list.add(point);
+                if (i + 1 >= len) {
+                    return handleNumPointList(list);
+                }
+
+                //后边还有字符
+                if (NumPoint.isChineseNum(arrays[i + 1])) {
+                    continue;
+                }
+                //连续字符:两个非数字字符
+                //非法组合
+                if (!NumPoint.isRightSamePosChars(ch, arrays[i + 1])) {
+                    System.out.print("非法字符组合：pos=prev&next,prev|next=" + ch + "|" + arrays[i + 1]);
+                    return -1;
+                }
+                // 万亿连用
+                continue;
+            }
+            //数字
+            if (ch == '零') {
+                continue;
+            }
+            //正整数
+            if (i == len - 1
+                    || (i < len - 1 && NumPoint.isChineseSpecialPos(arrays[i + 1]))) {
+                ChineseNum num = ChineseNum.getByName(ch);//数字
+                IntegerNumPos pos = IntegerNumPos.GE;//单位
+                NumPoint point = new NumPoint(num, pos);
+                list.add(point);
+                continue;
+            }
+            //结束
+            if (i + 1 >= len) {
+                return handleNumPointList(list);
+            }
+            char ch2 = arrays[i + 1];
+            if (NumPoint.isIllegalChar(ch2)) {
+                System.out.print("非法字符：pos=next,index=" + (i + 1) + ",char=" + ch2);
+                return -1;
+            }
+            if (!NumPoint.isChineseNormalPos(ch2)) {
+                System.out.println("非法组合:" + str.substring(i, i + 2 > len ? len : i + 2));
+                return -1;
+            }
+            ChineseNum num = ChineseNum.getByName(ch);//数字
+            IntegerNumPos pos = IntegerNumPos.getByName(ch2);//单位
+            NumPoint point = new NumPoint(num, pos);
+            list.add(point);
+            i++;//多加一次
+        }
+        int sum = 0;
+        sum = handleNumPointList(list);
+        return sum;
+    }
+
+    /**
+     * 使用两个指针,通过判定二者的组合形式来确定数据
+     *
+     * @param str
+     * @return
+     */
+    public static Integer getNumFromChineseStr2(String str) {
         if (null == str || "".equals(str.trim())) {
 
         }
@@ -145,9 +252,7 @@ public class Str2Num {
         //结果形如:(3*100+20）*1亿+（2*1000+3*1）*1万+（1*1000+2*100+3*10+4）*1个
         int total = 0;
         int sum = 0;
-        int index2CleanSum = clearSpecialPosIndex(pointList);//单位 '亿'出现的位置
         int len = pointList.size();
-        index2CleanSum = index2CleanSum > 0 && index2CleanSum < len - 1 ? index2CleanSum : -1;
         for (int i = 0; i < len; i++) {
             NumPoint point = pointList.get(i);
             ChineseNum num = point.getNum();
@@ -157,30 +262,12 @@ public class Str2Num {
             } else if (num.getNum() == -1 && sum > 0) {//special pos
                 sum = sum * pos.getNumStand();
                 total += sum;
-                //将sum阶段性归零:三亿三千万零五百
-                if (index2CleanSum > 0 && i >= index2CleanSum) {
-                    sum = 0;
-                }
+                //将sum阶段性归零:三亿三千万零五百,不可能出现 万亿并用的情况===》超出Integer最大范围了
+                sum = 0;
             }
         }
         total += sum;
         return total;
-    }
-
-    //第一个'亿'出现的位置:避免'亿'之前的'万'被归零
-    private static int clearSpecialPosIndex(List<NumPoint> pointList) {
-        if (null == pointList || pointList.isEmpty()) {
-            return -1;
-        }
-        for (int i = 0; i < pointList.size(); i++) {
-            NumPoint point = pointList.get(i);
-            ChineseNum num = point.getNum();
-            IntegerNumPos pos = point.getPos();
-            if (num.getNum() == -1 && pos.getChineseName() == '亿') {
-                return i;
-            }
-        }
-        return -1;
     }
 
     public static void main(String[] args) {
